@@ -3,7 +3,7 @@ use std::io::{self, BufRead};
 
 use itertools::Itertools;
 
-fn main() {
+pub fn day01() {
 
     let test_vec = vec![1721, 979, 366, 299, 675, 1456];
 
@@ -13,7 +13,7 @@ fn main() {
     }
 
     let mut problem_vec: Vec<i32> = Vec::new();
-    let file = File::open("input").unwrap();
+    let file = File::open("inputs/day01").unwrap();
 
     for line in io::BufReader::new(file).lines() {
         match line {
