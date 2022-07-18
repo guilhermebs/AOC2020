@@ -1,12 +1,13 @@
 use std::fs::File;
 use std::io::{self, BufRead};
 
+use itertools::Itertools;
+
 fn main() {
 
     let test_vec = vec![1721, 979, 366, 299, 675, 1456];
-    let result = find_sum_3(test_vec, 2020);
 
-    match result {
+    match find_sum_n(test_vec, 2020, 3) {
         Some(res) => println!("Solution: {}", res),
         None => print!("No solution!")
     }
@@ -21,9 +22,7 @@ fn main() {
         }
     }
 
-    let result = find_sum_3(problem_vec, 2020);
-
-    match result {
+    match find_sum_n(problem_vec, 2020, 3) {
         Some(res) => println!("Solution: {}", res),
         None => print!("No solution!")
     }
@@ -31,25 +30,10 @@ fn main() {
 }
 
 
-fn find_sum(values: Vec<i32>, target: i32) -> Option<i32> {
-    for (i, v1) in values.iter().enumerate() {
-        for v2 in values[i+1..].iter() {
-            if *v1 + *v2 == target {
-                return Some(*v1 * *v2);
-            }
-        }
-    }
-    None
-}
-
-fn find_sum_3(values: Vec<i32>, target: i32) -> Option<i32> {
-    for (i, v1) in values.iter().enumerate() {
-        for (j, v2) in values[i+1..].iter().enumerate() {
-            for v3 in values[i+j+1..].iter() {
-                if *v1 + *v2 + *v3 == target {
-                    return Some(*v1 * *v2 * *v3);
-                }
-            }
+fn find_sum_n(values: Vec<i32>, target: i32, n: usize) -> Option<i32> {
+    for v in values.into_iter().combinations(n) {
+        if v.iter().sum::<i32>() == target {
+            return Some(v.iter().product());
         }
     }
     None
