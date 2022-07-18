@@ -42,6 +42,7 @@ impl Password {
     }
 }
 
+#[allow(dead_code)]
 pub fn day02() {
     let mut passwords = Vec::<Password>::new();
     let file = File::open("inputs/day02").unwrap();

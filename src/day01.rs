@@ -3,6 +3,7 @@ use std::io::{self, BufRead};
 
 use itertools::Itertools;
 
+#[allow(dead_code)]
 pub fn day01() {
 
     let test_vec = vec![1721, 979, 366, 299, 675, 1456];
