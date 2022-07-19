@@ -16,8 +16,7 @@ enum PasswordError {
 }
 
 impl Password {
-    fn from_string(string: String) -> Result<Password, PasswordError> {
-        let re = Regex::new(r"(\d+)-(\d+) ([a-z]): ([a-z]+)").unwrap();
+    fn from_string(string: String, re: &Regex) -> Result<Password, PasswordError> {
         match re.captures(&string) {
             Some(cap) => return Ok(Password{
                 min_letter: cap[1].parse::<usize>().unwrap(),
@@ -46,10 +45,11 @@ impl Password {
 pub fn day02() {
     let mut passwords = Vec::<Password>::new();
     let file = File::open("inputs/day02").unwrap();
+    let re = Regex::new(r"(\d+)-(\d+) ([a-z]): ([a-z]+)").unwrap();
 
     for line in io::BufReader::new(file).lines() {
         match line {
-            Ok(ln) =>  passwords.push(Password::from_string(ln).unwrap()),
+            Ok(ln) =>  passwords.push(Password::from_string(ln, &re).unwrap()),
             _ => println!("failed to read")
         }
     }
@@ -93,7 +93,8 @@ mod tests {
 
     #[test]
     fn test_from_string() {
-        let sut = Password::from_string("1-3 b: cdefg".to_string()).unwrap();
+        let re = Regex::new(r"(\d+)-(\d+) ([a-z]): ([a-z]+)").unwrap();
+        let sut = Password::from_string("1-3 b: cdefg".to_string(), &re).unwrap();
         assert_eq!(sut.min_letter, 1);
         assert_eq!(sut.max_letter, 3);
         assert_eq!(sut.letter, 'b');
