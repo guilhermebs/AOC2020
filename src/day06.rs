@@ -11,8 +11,6 @@ pub fn day06() {
     println!("Part 1 solution: {}", part1_sol);
     let part2_sol: usize = buffer.split("\n\n")
         .map(|s| {
-            println!("{}\n", s);
-            println!("{:?}\n", s.split("\n").filter(|s| s.len() > 0).map(|a| HashSet::<char>::from_iter(a.chars())).collect::<Vec<HashSet<char>>>());
             s.split("\n").filter(|s| s.len() > 0)
             .map(|a| HashSet::from_iter(a.chars()))
             .reduce(|accum: HashSet<char>, hm| HashSet::from_iter(accum.intersection(&hm).cloned()))
