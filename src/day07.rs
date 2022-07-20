@@ -5,6 +5,7 @@ use std::{
 
 use regex::Regex;
 
+#[allow(dead_code)]
 pub fn day07() {
     let mut with_bag = HashMap::<String, Vec<(u32, String)>>::new();
     let mut bags_in = HashMap::<String, Vec<(u32, String)>>::new();
