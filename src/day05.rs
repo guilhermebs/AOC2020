@@ -88,16 +88,14 @@ fn get_seat_id(seat: &String) -> Result<u32, String> {
 #[allow(dead_code)]
 pub fn day05() {
     let buffer = fs::read_to_string("inputs/day05").unwrap();
-    let part1_sol = buffer
-            .split("\n").filter(|&s| s.len() > 0)
-            .map(|s| get_seat_id(&s.to_string()).unwrap())
-            .max().unwrap();
-    println!("part 1: {}", part1_sol);
     let all_ids: HashSet<u32> = HashSet::from_iter({
             buffer
             .split("\n").filter(|&s| s.len() > 0)
             .map(|s| get_seat_id(&s.to_string()).unwrap())
     });
+    let part1_sol = all_ids.iter().max().unwrap();
+    println!("part 1: {}", part1_sol);
+
     let part2_sol = (8..126*8)
             .filter(|id| !all_ids.contains(id) &&
                                 all_ids.contains(&(id+1))&&
