@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, iter::Sum};
 
 use itertools::Itertools;
 
@@ -9,10 +9,7 @@ pub fn day09() {
         .split('\n')
         .filter(|x| x.len() > 0)
         .into_iter()
-        .map(|x| {
-            println!("{:?}", x);
-            x.parse::<u64>().unwrap()
-        })
+        .map(|x| x.parse::<u64>().unwrap())
         .collect::<Vec<u64>>();
     let preamble_len: usize = 25;
 
@@ -31,9 +28,13 @@ pub fn day09() {
     println!("Part 1 solution: {:?}", part1_sol)
 }
 
-fn is_sum(new_val: &u64, preamble: &[u64]) -> bool {
+fn is_sum<'a, T>(new_val: &T, preamble: &'a [T]) -> bool
+where
+    T: PartialEq,
+    T: Sum<&'a T>,
+{
     for pair in preamble.iter().combinations(2) {
-        if pair.into_iter().sum::<u64>() == *new_val {
+        if pair.into_iter().sum::<T>() == *new_val {
             return true;
         }
     }
