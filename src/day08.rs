@@ -38,8 +38,12 @@ pub fn day08() {
 
     println!("Part 1 solution: {:?}", part1_sol);
 
-    let mut can_flip = instructions.iter().map(|(instr, _)| instr == "jmp" || instr == "nop").collect::<Vec<bool>>();
+    let mut can_flip = instructions
+        .iter()
+        .map(|(instr, _)| instr == "jmp" || instr == "nop")
+        .collect::<Vec<bool>>();
     let mut part2_sol: i32;
+
     loop {
         let mut visited = vec![false; instructions.len()];
         let mut has_flipped = false;
@@ -55,7 +59,7 @@ pub fn day08() {
             if !has_flipped {
                 let (inst2, flip) = maybe_flip(inst, &can_flip[cur_instr]);
                 has_flipped = flip;
-                if flip { 
+                if flip {
                     can_flip[cur_instr] = false;
                 };
                 instruction = inst2;
@@ -68,13 +72,12 @@ pub fn day08() {
                 "jmp" => cur_instr = (cur_instr as i32 + val) as usize,
                 _ => cur_instr += 1,
             }
-        }       
-        if *visited.last().unwrap() { 
+        }
+        if *visited.last().unwrap() {
             break;
         }
     }
     println!("Part 2: {:?}", part2_sol);
-
 }
 
 fn maybe_flip(inst: &String, can_flip: &bool) -> (String, bool) {
@@ -82,8 +85,8 @@ fn maybe_flip(inst: &String, can_flip: &bool) -> (String, bool) {
         return (inst.to_owned(), false);
     }
     match inst.as_str() {
-       "jmp" => return ("nop".to_string(), true),
-       "nop" => return ("jmp".to_string(), true),
-       _ => return(inst.to_owned(), false)
+        "jmp" => return ("nop".to_string(), true),
+        "nop" => return ("jmp".to_string(), true),
+        _ => return (inst.to_owned(), false),
     }
 }
