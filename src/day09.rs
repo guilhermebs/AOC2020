@@ -1,4 +1,4 @@
-use std::{fs, iter::Sum};
+use std::{fs, iter::Sum, ops::{AddAssign, Add}};
 
 use itertools::Itertools;
 
@@ -48,7 +48,11 @@ where
     return false;
 }
 
-fn solve_part2(data_stream: &Vec<u64>, part1_sol: &u64) -> Option<u64> {
+fn solve_part2<'a, T>(data_stream: &'a [T], part1_sol: &T) -> Option<<&'a T as Add<&'a T>>::Output>
+where
+    T: Copy + AddAssign<&'a T> + Ord,
+    &'a T: Add,
+{
     for (i, v) in data_stream.iter().enumerate() {
         let mut acc = v.to_owned();
         let mut j = i;
@@ -60,7 +64,9 @@ fn solve_part2(data_stream: &Vec<u64>, part1_sol: &u64) -> Option<u64> {
             };
         }
         if &acc == part1_sol {
-            return Some(data_stream[i..j].iter().min().unwrap() + data_stream[i..j].iter().max().unwrap());
+            return Some(
+                data_stream[i..j].iter().min().unwrap() + data_stream[i..j].iter().max().unwrap(),
+            );
         }
     }
     return None;
