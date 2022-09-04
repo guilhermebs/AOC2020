@@ -36,5 +36,5 @@ pub fn day10() {
         }
     }
 
-    println!("Part 2: {:?}", number_with_joltage.last());
+    println!("Part 2: {:?}", number_with_joltage.last().unwrap());
 }
