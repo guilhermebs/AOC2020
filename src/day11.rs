@@ -53,6 +53,43 @@ fn neighbours_in_state(i: usize, j: usize, seats: &Seats, state: PositionState) 
     result
 }
 
+fn evolve_seats2(seats_in: &Seats) -> Seats {
+    let mut result = seats_in.clone().to_vec();
+    for (i, row) in seats_in.iter().enumerate() {
+        for (j, position) in row.iter().enumerate(){
+            let count_occupied = neighbours_in_state2(i, j, seats_in, PositionState::Occupied);
+            match position {
+                &PositionState::Empty => if count_occupied == 0 { result[i][j] = PositionState::Occupied },
+                &PositionState::Occupied => if count_occupied >= 5 { result[i][j] = PositionState::Empty },
+                &PositionState::Floor => (),
+            }
+        }
+    }
+    result
+}
+
+fn neighbours_in_state2(i: usize, j: usize, seats: &Seats, state: PositionState) -> usize {
+    let mut result: usize = 0;
+    for dir_i in -1i32..=1i32 {
+        for dir_j in -1i32..=1i32 {
+            if !(dir_i == 0 && dir_j == 0) {
+                let mut t = 1;
+                loop {
+                    let ii = i as i32 + dir_i * t;
+                    let jj = j as i32 + dir_j * t;
+                    if ii < 0 || ii >= seats.len() as i32 {break;} ;
+                    if jj < 0 || jj >= seats.len() as i32 {break;} ;
+                    match seats[ii as usize][jj as usize] {
+                       PositionState::Floor => t += 1,
+                       _ => {result += (seats[ii as usize][jj as usize] == state) as usize; break;}
+                    }
+                }
+            }
+        }
+    }
+    result
+}
+
 fn seats_equal (seats1: &Seats, seats2: &Seats) -> bool {
     seats1.iter().
     zip(seats2.iter()).
@@ -71,7 +108,7 @@ fn seats_occupied(seats: &Seats) -> u32 {
 #[allow(dead_code)]
 pub fn day11(){
     let input_contents = fs::read_to_string("inputs/day11").unwrap();
-    let mut seats = input_contents
+    let seats = input_contents
         .split('\n')
         .filter(|x| x.len() > 0)
         .into_iter()
@@ -81,15 +118,27 @@ pub fn day11(){
             .collect::<Vec<PositionState>>()
         })
         .collect::<Seats>();
-    let mut new_seats: Seats;
+    let mut p1_seats = seats.clone();
     loop {
-       new_seats = evolve_seats(&seats);
-       if seats_equal(&seats, &new_seats) {
+       let new_seats = evolve_seats(&p1_seats);
+       if seats_equal(&p1_seats, &new_seats) {
         break;
        } else {
-        seats = new_seats;
+        p1_seats = new_seats;
        }
     }
-    let part1_sol = seats_occupied(&seats);
+    let part1_sol = seats_occupied(&p1_seats);
     println!("Part 1: {:?}", part1_sol);
+    let mut p2_seats = seats.clone();
+    loop {
+       let new_seats = evolve_seats2(&p2_seats);
+       if seats_equal(&p2_seats, &new_seats) {
+        break;
+       } else {
+        p2_seats = new_seats;
+       }
+    }
+    let part2_sol = seats_occupied(&p2_seats);
+    println!("Part 2: {:?}", part2_sol);
+
 }
