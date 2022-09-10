@@ -14,7 +14,6 @@ enum TurnDirection {
     Right,
 }
 
-#[derive(Clone)]
 struct ShipState {
     direction: Direction,
     position_ns: i32,
@@ -22,7 +21,7 @@ struct ShipState {
 }
 
 impl ShipState {
-    pub fn apply_command(&self, command: &str) -> ShipState {
+    pub fn apply_command(&mut self, command: &str){
         let instruction = command.chars().nth(0).unwrap();
         let value = &command[1..].parse::<i32>().unwrap();
         match instruction {
@@ -37,31 +36,27 @@ impl ShipState {
         }
     }
 
-    fn move_ship(&self, direction: Direction, value: &i32) -> ShipState {
-        let mut result = self.clone();
+    fn move_ship(&mut self, direction: Direction, value: &i32) {
         match direction {
-            Direction::North => result.position_ns += value,
-            Direction::South => result.position_ns -= value,
-            Direction::East => result.position_ew += value,
-            Direction::West => result.position_ew -= value,
+            Direction::North => self.position_ns += value,
+            Direction::South => self.position_ns -= value,
+            Direction::East => self.position_ew += value,
+            Direction::West => self.position_ew -= value,
         }
-        result
     }
 
-    fn turn_ship(&self, turn_direction: TurnDirection, value: &i32) -> ShipState {
+    fn turn_ship(&mut self, turn_direction: TurnDirection, value: &i32) {
         let directions = vec![Direction::East, Direction::North, Direction::West, Direction::South];
         let current_angle = directions.iter().position(|&x| x == self.direction).unwrap() * 90usize;
         let turn_angle = match turn_direction {
             TurnDirection::Left => *value as usize, 
             TurnDirection::Right => (360 - value) as usize, 
         };
-        let new_direction = directions[(((current_angle + turn_angle)/90) % 4)];
-        let mut result = self.clone();
-        result.direction = new_direction;
-        result
+        self.direction = directions[(((current_angle + turn_angle)/90) % 4)];
     }
     
 }
+
 
 #[allow(dead_code)]
 pub fn day12() {
@@ -72,7 +67,7 @@ pub fn day12() {
         .into_iter();
     let mut ship = ShipState{direction: Direction::East, position_ns:0, position_ew:0};
     for command in instructions {
-        ship = ship.apply_command(command);
+        ship.apply_command(command);
     }
     let part1_sol = ship.position_ns.abs() + ship.position_ew.abs();
     println!("Part 1: {:?}", part1_sol);
