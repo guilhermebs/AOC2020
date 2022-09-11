@@ -93,7 +93,8 @@ pub fn day14() {
     let mut mask = BinaryMask {
         bits: [Some(false); SIZE],
     };
-    let mut memory: Vec<Option<BinaryNumber>> = Vec::new();
+
+    let mut memory: HashMap<u64, u64> = HashMap::new();
 
     for line in input_contents.split("\n") {
         if line.len() == 0 {
@@ -105,21 +106,15 @@ pub fn day14() {
         }
         match RE_NUMBER.captures(line) {
             Some(c) => {
-                let address = c[1].parse::<usize>().unwrap();
+                let address = c[1].parse::<u64>().unwrap();
                 let value = BinaryNumber::from_number(c[2].parse::<u64>().unwrap());
-                if address > memory.len().saturating_sub(1) {
-                    memory.resize(address + 1, None)
-                }
-                memory[address] = Some(mask.apply(value));
+                memory.insert(address, mask.apply(value).to_number());
             }
             None => (),
         }
     }
 
-    let part1_sol = memory.iter().fold(0u64, |acc, val| match val {
-        Some(n) => acc + n.to_number(),
-        None => acc,
-    });
+    let part1_sol = memory.iter().fold(0u64, |acc, (_, val)| acc + val);
     println!("Part 1: {:?}", part1_sol);
 
 
