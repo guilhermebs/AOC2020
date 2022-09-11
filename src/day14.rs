@@ -11,7 +11,7 @@ lazy_static! {
 
 #[derive(Clone)]
 struct BinaryNumber {
-    bits: [bool; SIZE]
+    bits: [bool; SIZE],
 }
 
 impl BinaryNumber {
@@ -19,7 +19,7 @@ impl BinaryNumber {
         let mut bits = [false; SIZE];
         let mut remainder = number;
         for i in (0..SIZE).rev() {
-            bits[i] = (remainder/2u64.pow(i as u32)) == 1;
+            bits[i] = (remainder / 2u64.pow(i as u32)) == 1;
             remainder -= (bits[i] as u64) * (2u64.pow(i as u32));
         }
         BinaryNumber { bits: bits }
@@ -34,7 +34,7 @@ impl BinaryNumber {
 }
 
 struct BinaryMask {
-    bits: [Option<bool>; SIZE]
+    bits: [Option<bool>; SIZE],
 }
 
 impl BinaryMask {
@@ -42,10 +42,10 @@ impl BinaryMask {
         let mut bits = [Some(true); SIZE];
         for (i, c) in string.chars().rev().enumerate() {
             bits[i] = match c {
-               '1' => Some(true),
-               '0' => Some(false),
-               'X' => None,
-               _ => panic!("Invalid character {:?}", c)
+                '1' => Some(true),
+                '0' => Some(false),
+                'X' => None,
+                _ => panic!("Invalid character {:?}", c),
             }
         }
         BinaryMask { bits: bits }
@@ -56,13 +56,12 @@ impl BinaryMask {
         for (i, mask_bit) in self.bits.iter().enumerate() {
             match mask_bit {
                 Some(v) => result.bits[i] = *v,
-                None => ()
+                None => (),
             }
         }
         result
     }
 }
-
 
 #[allow(dead_code)]
 pub fn day14() {
@@ -71,11 +70,15 @@ pub fn day14() {
     assert_eq!(decimal, sut.to_number());
 
     let input_contents = fs::read_to_string("inputs/day14").unwrap();
-    let mut mask = BinaryMask{bits: [Some(false); SIZE]};
+    let mut mask = BinaryMask {
+        bits: [Some(false); SIZE],
+    };
     let mut memory: Vec<Option<BinaryNumber>> = Vec::new();
 
     for line in input_contents.split("\n") {
-        if line.len() == 0 { continue; }
+        if line.len() == 0 {
+            continue;
+        }
         match RE_MASK.captures(line) {
             Some(c) => mask = BinaryMask::from_string(&c[1]),
             None => (),
@@ -84,18 +87,18 @@ pub fn day14() {
             Some(c) => {
                 let address = c[1].parse::<usize>().unwrap();
                 let value = BinaryNumber::from_number(c[2].parse::<u64>().unwrap());
-                if address > memory.len().saturating_sub(1) { memory.resize(address + 1, None) }
+                if address > memory.len().saturating_sub(1) {
+                    memory.resize(address + 1, None)
+                }
                 memory[address] = Some(mask.apply(value));
             }
-            None => ()
+            None => (),
         }
     }
 
-    let part1_sol = memory.iter()
-        .fold(0u64, |acc, val| match val {
-            Some(n) => acc + n.to_number(),
-            None => acc
-        });
+    let part1_sol = memory.iter().fold(0u64, |acc, val| match val {
+        Some(n) => acc + n.to_number(),
+        None => acc,
+    });
     println!("Part 1: {:?}", part1_sol);
-
 }
