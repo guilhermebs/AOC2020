@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, collections::HashMap};
 
 use regex::Regex;
 
@@ -9,7 +9,7 @@ lazy_static! {
     static ref RE_MASK: Regex = Regex::new(r"^mask = ([01X]+)$").unwrap();
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 struct BinaryNumber {
     bits: [bool; SIZE],
 }
@@ -61,6 +61,26 @@ impl BinaryMask {
         }
         result
     }
+
+    pub fn apply_address(&self, address: u64) -> Vec<u64> {
+        let mut masked_address: Vec<BinaryNumber> = vec![BinaryNumber::from_number(address)];
+        for (i, mask_bit) in self.bits.iter().enumerate() {
+            match mask_bit {
+                Some(true) => masked_address.iter_mut().for_each(|x| x.bits[i] = true),
+                Some(false) => (),
+                None => {
+                    masked_address.iter_mut().for_each(|x| x.bits[i] = true);
+                    let mut results_false = masked_address.iter().map(|x| {
+                        let mut y = x.clone();
+                        y.bits[i] = false;
+                        y
+                    }).collect::<Vec<BinaryNumber>>();
+                    masked_address.append(&mut results_false);
+                }
+            }
+        }
+        masked_address.iter().map(|x| x.to_number()).collect::<Vec<u64>>()
+    }
 }
 
 #[allow(dead_code)]
@@ -101,4 +121,31 @@ pub fn day14() {
         None => acc,
     });
     println!("Part 1: {:?}", part1_sol);
+
+
+    let mut memory: HashMap<u64, u64> = HashMap::new();
+
+    for line in input_contents.split("\n") {
+        if line.len() == 0 {
+            continue;
+        }
+        match RE_MASK.captures(line) {
+            Some(c) => mask = BinaryMask::from_string(&c[1]),
+            None => (),
+        }
+        match RE_NUMBER.captures(line) {
+            Some(c) => {
+                let base_address = c[1].parse::<u64>().unwrap();
+                let value = c[2].parse::<u64>().unwrap();
+                for address in mask.apply_address(base_address) {
+                    memory.insert(address, value);
+                }
+            }
+            None => (),
+        }
+    }
+
+    let part2_sol = memory.iter().fold(0u64, |acc, (_, val)| acc + val );
+    println!("Part 2: {:?}", part2_sol);
+
 }
