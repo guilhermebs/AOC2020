@@ -17,6 +17,7 @@ mod day11;
 mod day12;
 mod day13;
 mod day14;
+mod day15;
 
 fn main() {
     let start = Instant::now();
@@ -33,7 +34,8 @@ fn main() {
     //day11::day11();
     //day12::day12(); 
     //day13::day13(); 
-    day14::day14(); 
+    //day14::day14(); 
+    day15::day15(); 
     let duration = start.elapsed();
     println!("Time elapsed: {:?}", duration)
 }
