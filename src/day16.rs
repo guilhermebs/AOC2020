@@ -1,5 +1,6 @@
 use regex::Regex;
 use std::fs;
+use varisat::{CnfFormula, ExtendFormula, Lit};
 
 #[allow(dead_code)]
 #[derive(Copy, Clone, Debug)]
@@ -64,15 +65,43 @@ pub fn day16() {
 
     let mut nearby_tickets = nearby_tickets_str.split("\n");
     nearby_tickets.next();
+    let mut tickets: Vec<Vec<usize>> = vec![];
     let mut part1_sol = 0;
     for ticket in nearby_tickets.filter(|t| t.len() > 0) {
-        println!("{:?}", ticket);
-        part1_sol += ticket
+        let ticket = ticket
             .split(",")
             .map(|x| x.parse::<usize>().unwrap())
+            .collect::<Vec<usize>>();
+        let total_invalid = ticket
+            .iter()
             .filter(|x| !rules.iter().any(|r| r.evaluate(&x)))
-            .sum::<usize>();
+            .sum();
+        match total_invalid {
+            0 => tickets.push(ticket),
+            _ => part1_sol += total_invalid,
+        }
     }
 
     println!("Part 1: {:?}", part1_sol);
+
+    let my_ticket = my_ticket_str
+        .split("\n")
+        .last()
+        .unwrap()
+        .split(",")
+        .map(|x| x.parse::<usize>().unwrap())
+        .collect::<Vec<usize>>();
+    tickets.push(my_ticket);
+
+    let mut formula = CnfFormula::new();
+    let lits = formula.new_lit_iter(rules.len()).collect::<Vec<Lit>>();
+
+    for ticket in tickets {
+        ticket.iter().map(|x| {
+            formula.add_clause(lits.iter().zip(rules).map(|(lit, r)| match r.evaluate(x) {
+                true => lit,
+                false => !lit,
+            }))
+        })
+    }
 }
