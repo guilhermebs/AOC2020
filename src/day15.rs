@@ -27,5 +27,18 @@ pub fn day15() {
         cur_value = new_value;
     }
 
-    println!("Part 1: {:?}", cur_value)
+    println!("Part 1: {:?}", cur_value);
+
+    let final_i_part2 = 30000000;
+
+    for i in final_i..final_i_part2 {
+        let new_value = match last_spoken.entry(cur_value) {
+            Entry::Occupied(v) => i - v.get(),
+            Entry::Vacant(_) => 0,
+        };
+        last_spoken.insert(cur_value, i);
+        cur_value = new_value;
+    }
+
+    println!("Part 2: {:?}", cur_value);
 }
