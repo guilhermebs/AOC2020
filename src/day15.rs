@@ -1,13 +1,11 @@
-use std::{
-    collections::{hash_map::Entry, HashMap},
-    iter::FromIterator,
-};
+use std::collections::hash_map::Entry;
+use rustc_hash::FxHashMap;
 
 #[allow(dead_code)]
 pub fn day15() {
     let init_sequence: Vec<usize> = vec![0, 5, 4, 1, 10, 14, 7];
 
-    let mut last_spoken = HashMap::<usize, usize>::from_iter(
+    let mut last_spoken = FxHashMap::<usize, usize>::from_iter(
         init_sequence[..init_sequence.len() - 1]
             .iter()
             .enumerate()
