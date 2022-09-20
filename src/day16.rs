@@ -1,6 +1,5 @@
 use regex::Regex;
 use std::fs;
-use varisat::{CnfFormula, ExtendFormula, Lit};
 
 #[allow(dead_code)]
 #[derive(Copy, Clone, Debug)]
@@ -93,15 +92,4 @@ pub fn day16() {
         .collect::<Vec<usize>>();
     tickets.push(my_ticket);
 
-    let mut formula = CnfFormula::new();
-    let lits = formula.new_lit_iter(rules.len()).collect::<Vec<Lit>>();
-
-    for ticket in tickets {
-        ticket.iter().map(|x| {
-            formula.add_clause(lits.iter().zip(rules).map(|(lit, r)| match r.evaluate(x) {
-                true => lit,
-                false => !lit,
-            }))
-        })
-    }
 }
