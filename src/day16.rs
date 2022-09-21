@@ -83,13 +83,4 @@ pub fn day16() {
 
     println!("Part 1: {:?}", part1_sol);
 
-    let my_ticket = my_ticket_str
-        .split("\n")
-        .last()
-        .unwrap()
-        .split(",")
-        .map(|x| x.parse::<usize>().unwrap())
-        .collect::<Vec<usize>>();
-    tickets.push(my_ticket);
-
 }

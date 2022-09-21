@@ -1,8 +1,10 @@
 from dataclasses import dataclass
-from importlib.resources import contents
-from operator import ne
+import functools
+import itertools
 import re
-from typing import Sequence
+from typing import List, Sequence
+
+import z3
 
 @dataclass
 class Interval:
@@ -11,6 +13,9 @@ class Interval:
 
     def validate(self, x: int):
         return self.lb <= x <= self.ub
+    
+    def __str__(self) -> str:
+        return f"{self.lb}-{self.ub}"
 
 
 class TicketField:
@@ -30,7 +35,12 @@ class TicketField:
     
     def apply(self, nr:int) -> bool:
         return any(interval.validate(nr) for interval in self.intervals)
-        
+
+    def __str__(self):
+        return f"{self.name}: " + " ".join(str(i) for i in self.intervals)
+    
+    def __repr__(self) -> str:
+        return str(self)
 
 
 def solve():
@@ -44,7 +54,7 @@ def solve():
             break
         rules.append(TicketField.from_string(ln))
     
-    tickets = []
+    tickets: List[List[int]] = []
     next(contents)
     tickets.append([int(s) for s in next(contents).split(",")])
 
@@ -57,12 +67,32 @@ def solve():
         tickets.append([int(s) for s in ln.split(",")])
 
     prob1_sol = 0
+    valid_tickets: List[List[int]] = []
     for ticket in tickets:
         for nr in ticket:
-            if not any(r.apply(nr) for r in rules):
+            if all(not r.apply(nr) for r in rules):
                 prob1_sol += nr
+                break
+        else:
+            valid_tickets.append(ticket)
 
     print("part 1:", prob1_sol)
+
+    fields = [z3.Int(f"F{i}") for i, _ in enumerate(rules)]
+    s = z3.Solver()
+    s.add(z3.Distinct(*fields))
+    applicable = []
+    for i in range(len(valid_tickets[0])):
+        applicable.append([r for r in rules if all(r.apply(t[i]) for t in valid_tickets)])
+        s.add(z3.Or([fields[i] == j for j, r in enumerate(rules) if all(r.apply(t[i]) for t in valid_tickets)]))
+
+    s.check()
+    m = s.model()
+    ordered_rules = [rules[m[f].as_long()] for f in fields]
+
+    departures = [f for f, r in zip(tickets[0], ordered_rules) if r.name.startswith("departure")]
+    part2_sol = functools.reduce(lambda x, y: x * y, departures, 1)
+    print("part 2:", part2_sol)
        
 
 if __name__ == "__main__":
