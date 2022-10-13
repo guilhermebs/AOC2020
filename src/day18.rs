@@ -35,8 +35,21 @@ pub fn day18() {
     let part1_sol: u64 = file_contents
         .replace(" ", "")
         .split("\n")
-        .map(|x| {evaluate_expression(&mut x.chars().collect::<Vec<_>>().iter())})
+        .map(|x| evaluate_expression(&mut x.chars().collect::<Vec<_>>().iter()))
         .sum();
 
     println!("Part 1: {:?}", part1_sol);
+
+    let part2_sol: u64 = ("(".to_owned() + &file_contents + ")")
+        .replace(" ", "")
+        .replace("(", "((")
+        .replace(")", "))")
+        .replace("*", ")*(")
+        .replace("\n", ")\n(")
+        .split("\n")
+        .map(|x| evaluate_expression(&mut x.chars().collect::<Vec<_>>().iter()))
+        .sum();
+
+    println!("Part 2: {:?}", part2_sol);
+
 }
