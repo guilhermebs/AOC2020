@@ -54,7 +54,6 @@ pub fn day16() {
     let mut blocks = file_contents.split("\n\n");
 
     let rules_str = blocks.next().unwrap();
-    let my_ticket_str = blocks.next().unwrap();
     let nearby_tickets_str = blocks.next().unwrap();
 
     let rules = rules_str
