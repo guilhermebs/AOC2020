@@ -18,7 +18,6 @@ fn create_expression(rules_str: &HashMap<usize, &str>, i: usize) -> String {
     return "(?:".to_owned() + &rule + ")";
 }
 
-
 fn create_expression_pt2(rules_str: &HashMap<usize, &str>, i: usize) -> String {
     let rule = rules_str[&i]
         .replace("\"", "")
@@ -30,8 +29,17 @@ fn create_expression_pt2(rules_str: &HashMap<usize, &str>, i: usize) -> String {
         .join("");
     match i {
         8 => format!("(?:{})+", rule),
-        11 => format!("(?:{})", (1..20).map(|n| format!("(?:{}{{{n}}}?{}{{{n}}}?)", create_expression(rules_str, 42), create_expression(rules_str, 31))).join("|")),
-        _ =>  format!("(?:{})", rule),
+        11 => format!(
+            "(?:{})",
+            (1..20)
+                .map(|n| format!(
+                    "(?:{}{{{n}}}?{}{{{n}}}?)",
+                    create_expression(rules_str, 42),
+                    create_expression(rules_str, 31)
+                ))
+                .join("|")
+        ),
+        _ => format!("(?:{})", rule),
     }
 }
 
@@ -49,7 +57,8 @@ pub fn day19() {
                 None => None,
             }
         }));
-    let rule0_regex = Regex::new(&("^".to_owned() + &create_expression(&rules_str, 0) + "$")).unwrap();
+    let rule0_regex =
+        Regex::new(&("^".to_owned() + &create_expression(&rules_str, 0) + "$")).unwrap();
     let part1_sol = file_contents
         .split("\n")
         .filter_map(|s| match rule0_regex.is_match(s) {
@@ -59,8 +68,8 @@ pub fn day19() {
         .count();
     println!("{:?}", part1_sol);
 
-
-    let rule0_regex = Regex::new(&("^".to_owned() + &create_expression_pt2(&rules_str, 0) + "$")).unwrap();
+    let rule0_regex =
+        Regex::new(&("^".to_owned() + &create_expression_pt2(&rules_str, 0) + "$")).unwrap();
     let part2_sol = file_contents
         .split("\n")
         .filter_map(|s| match rule0_regex.is_match(s) {
@@ -69,6 +78,4 @@ pub fn day19() {
         })
         .count();
     println!("{:?}", part2_sol);
-
-
 }
