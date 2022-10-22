@@ -91,12 +91,12 @@ TEST_IMAGE = """
 
 def find_monster(image):
     pattern = np.array([[int(c) for c in row] for row in MONSTER.replace(" ", "0").replace("#", "1").split("\n") if len(row) > 0])
-    number_monsters = []
+    n_tiles_pattern = np.sum(pattern)
     for image_flip in (image, image[::-1, :], image[:, ::-1], image[::-1, ::-1]):
         for n_rot in range(4):
             convolved = scipy.signal.convolve2d(np.rot90(image_flip, n_rot), pattern, 'valid') 
-            number_monsters.append(
-                np.sum(convolved == np.sum(pattern)))
+            if (n_monsters := np.sum(convolved == n_tiles_pattern)) > 0:
+                return image.sum() -n_monsters * n_tiles_pattern
     return number_monsters
 
 def solve():
@@ -114,6 +114,7 @@ def solve():
             raise ValueError("invalid tile") 
         tiles[tile_nr] = np.array([list(map(lambda x: int(x), t)) for t in tile_desc[1:]])
 
+    side_len = int(np.sqrt(len(tiles)))
     tile_numbers = np.array(list(tiles.keys()))
     tiles = list(tiles.values())
     tile_ids = np.stack([np.repeat(range(len(tiles)), 4), np.tile(range(1, 5), len(tiles))]).T
@@ -134,58 +135,62 @@ def solve():
     print("Part 1:", part1_sol)
 
     # image composition with (tile, orientaion)
-    image = np.zeros((12, 12, 2), dtype=int)
-    image_tiles = [[[] for i in range(12)] for j in range(12)]
+    image = np.zeros((side_len, side_len, 2), dtype=int)
+    image_tiles = [[[] for i in range(side_len)] for j in range(side_len)]
     # Begin with top-right corner
     tile_id = side_tiles[side_tiles_counts==2][0]
     image[0, 0, 0] =  tile_id
     corner_sides = tiles_and_sides_with_no_match[tiles_and_sides_with_no_match[:, 0] == tile_id, 1]
-    image[0, 0, 1], image_tiles[0][0] =  adjust_tile(corner_sides[0], -corner_sides[1], tiles[tile_id])
-    print(side_tiles[side_tiles_counts==2])
+
+    for sign in [1, -1]: 
+        try:
+            image[0, 0, 1], image_tiles[0][0] =  adjust_tile(corner_sides[0], sign * corner_sides[1], tiles[tile_id])
+        except OrientationError:
+            pass
     # fill the first row
-    for i in range(1, 12):
-        candidates = [id_ for id_, s in zip(tile_ids, sides) if np.all(image_tiles[i-1][0][:, -1] == s) and id_[0] != image[i-1, 0, 0]]
+    for j in range(1, side_len):
+        candidates = [id_ for id_, s in zip(tile_ids, sides) if np.all(image_tiles[0][j-1][:, -1] == s) and id_[0] != image[0, j-1, 0]]
         if len(candidates) == 0:
             raise ValueError("No candidates!")
         if len(candidates) > 1:
             raise ValueError("Too many candidates!")
         tile_id, side1 = candidates[0]
-        image[i, 0, 0] =  tile_id
+        image[0, j, 0] =  tile_id
         for side2 in tiles_and_sides_with_no_match[tiles_and_sides_with_no_match[:, 0] == tile_id, 1]:
             for sign in [1, -1]: 
                 try:
-                    image[i, 0, 1], image_tiles[i][0] = adjust_tile(side1, sign * side2, tiles[tile_id])
+                    image[0, j, 1], image_tiles[0][j] = adjust_tile(side1, sign * side2, tiles[tile_id])
                 except OrientationError:
                     pass
                 else:
                     break
     # Fill the first column
-    for j in range(1, 12):
-        candidates = [id_ for id_, s in zip(tile_ids, sides) if np.all(image_tiles[0][j-1][-1, :] == s) and id_[0] != image[0, j-1, 0]]
+    for i in range(1, side_len):
+        candidates = [id_ for id_, s in zip(tile_ids, sides) if np.all(image_tiles[i-1][0][-1, :] == s) and id_[0] != image[i-1, 0, 0]]
         if len(candidates) == 0:
             raise ValueError("No candidates!")
         if len(candidates) > 1:
             raise ValueError("Too many candidates!")
         tile_id, side2 = candidates[0]
-        image[0, j, 0] =  tile_id
+        image[i, 0, 0] =  tile_id
         for side1 in tiles_and_sides_with_no_match[tiles_and_sides_with_no_match[:, 0] == tile_id, 1]:
             for sign in [1, -1]: 
                 try:
-                    image[0, j, 1], image_tiles[0][j] = adjust_tile(sign * side1, side2, tiles[tile_id])
+                    image[i, 0, 1], image_tiles[i][0] = adjust_tile(sign * side1, side2, tiles[tile_id])
                 except OrientationError:
                     pass
                 else:
                     break
     # Fill out all the rest
-    for i in range(1, 12):
-        for j in range(1, 12):
-            candidates = [id_ for id_, s in zip(tile_ids, sides) if np.all(image_tiles[i-1][j][:, -1] == s) and id_[0] != image[i-1, j, 0]]
+    for i in range(1, side_len):
+        for j in range(1, side_len):
+            candidates = [id_ for id_, s in zip(tile_ids, sides) if np.all(image_tiles[i][j-1][:, -1] == s) and id_[0] != image[i, j-1, 0]]
             if len(candidates) == 0:
                 raise ValueError("No candidates!")
             if len(candidates) > 1:
                 raise ValueError("Too many candidates!")
             tile_id, side1 = candidates[0]
-            candidates = [id_ for id_, s in zip(tile_ids, sides) if np.all(image_tiles[i][j-1][-1, :] == s) and id_[0] != image[i, j-1, 0]]
+            candidates = [id_ for id_, s in zip(tile_ids, sides) if np.all(image_tiles[i-1][j][-1, :] == s) and id_[0] != image[i-1, j, 0]]
             if len(candidates) == 0:
                 raise ValueError("No candidates!")
             if len(candidates) > 1:
@@ -195,18 +200,14 @@ def solve():
             image[i, j, 0] =  tile_id
             image[i, j, 1], image_tiles[i][j] = adjust_tile(side1, side2, tiles[tile_id])
 
-    for i in range(1, 11):
-        for j in range(1, 11):
-            assert np.all(image_tiles[i-1][j][:, -1] == image_tiles[i][j][:, 0])
-            assert np.all(image_tiles[i][j-1][-1, :] == image_tiles[i][j][0, :])
-            assert np.all(image_tiles[i+1][j][:, 0] == image_tiles[i][j][:, -1])
-            assert np.all(image_tiles[i][j+1][0, :] == image_tiles[i][j][-1, :])
+    for i in range(1, side_len-1):
+        for j in range(1, side_len-1):
+            assert np.all(image_tiles[i-1][j][-1, :] == image_tiles[i][j][0, :])
+            assert np.all(image_tiles[i][j-1][:, -1] == image_tiles[i][j][:, 0])
+            assert np.all(image_tiles[i+1][j][0, :] == image_tiles[i][j][-1, :])
+            assert np.all(image_tiles[i][j+1][:, 0] == image_tiles[i][j][:,-1])
     # Remove borders from each tile to form image 
     formed_image = np.block([[img[1:-1, 1:-1] for img in row] for row in image_tiles])
-    print(image[0, 0, 0], image[0, -1, 0], image[-1, 0, 0], image[-1, -1, 0])
-
-    test_image = np.array([[int(c) for c in row] for row in TEST_IMAGE.replace(".", "0").replace("#", "1").split("\n") if len(row) > 0])
-    print(find_monster(test_image))
 
     part2_sol = find_monster(formed_image)
     print("Part 2:", part2_sol)
