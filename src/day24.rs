@@ -28,14 +28,13 @@ fn flip_tile(instructions: &str, tiles: &mut TileRegister) {
     }
     let tile_at_pos = tiles.entry(pos).or_insert(false);
     *tile_at_pos = !*tile_at_pos;
-    println!("fliped {:?} to {:?}", pos, tile_at_pos)
 }
 
 fn art_exibit(tiles: &mut TileRegister) {
     let mut adjacent_black = HashMap::<TilePos, u32>::new();
-    const adjacent_pos: [TilePos; 6] = [(1, 1), (2, 0), (1, -1), (-1, -1), (-2, 0), (-1, 1)];
+    const ADJACENT_POS: [TilePos; 6] = [(1, 1), (2, 0), (1, -1), (-1, -1), (-2, 0), (-1, 1)];
     for (&pos, _) in tiles.iter().filter(|(_, &x)| x) {
-        for step in adjacent_pos {
+        for step in ADJACENT_POS {
             *adjacent_black
                 .entry((pos.0 + step.0, pos.1 + step.1))
                 .or_insert(0) += 1
@@ -62,11 +61,16 @@ fn art_exibit(tiles: &mut TileRegister) {
 
 #[allow(dead_code)]
 pub fn day24() {
-    let file_contents = fs::read_to_string("inputs/day24_test").unwrap();
+    let file_contents = fs::read_to_string("inputs/day24").unwrap();
     let mut tiles = TileRegister::new();
     for line in file_contents.split('\n').filter(|ln| ln.len() > 0) {
         flip_tile(line, &mut tiles);
     }
     let part1_sol = tiles.values().fold(0, |acc, &v| acc + v as i32);
-    println!("{:?}", part1_sol)
+    println!("{:?}", part1_sol);
+    for _ in 0..100 {
+        art_exibit(&mut tiles);
+    }
+    let part2_sol = tiles.values().fold(0, |acc, &v| acc + v as i32);
+    println!("{:?}", part2_sol)
 }
