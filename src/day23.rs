@@ -1,9 +1,8 @@
 use itertools::Itertools;
 
-fn move_cups(cups: Vec<u32>) -> Vec<u32> {
+fn move_cups(cups: Vec<u32>, max_val: u32) -> Vec<u32> {
     let current_cup = cups[0];
     let mut pickup = cups[1..4].to_vec();
-    let max_val = cups[4..].iter().max().unwrap();
     let mut destination = current_cup - 1;
     let insert_position = loop {
         let index = cups[4..].iter().position(|&c| c == destination);
@@ -12,7 +11,7 @@ fn move_cups(cups: Vec<u32>) -> Vec<u32> {
             None => (),
         }
         if destination == 0 {
-            destination = *max_val;
+            destination = max_val;
         } else {
             destination -= 1;
         }
@@ -20,7 +19,7 @@ fn move_cups(cups: Vec<u32>) -> Vec<u32> {
 
     let mut result = cups[4..insert_position].to_vec();
     result.append(&mut pickup);
-    result.append(&mut cups[insert_position..].to_vec());
+    result.extend_from_slice(&cups[insert_position..]);
     result.push(current_cup);
     return result;
 }
@@ -53,15 +52,18 @@ pub fn day23() {
         .collect_vec();
 
     let mut cups = init_cups.clone();
+    let max_val = cups.iter().max().unwrap().to_owned();
 
     for _ in 0..100 {
-        cups = move_cups(cups);
+        cups = move_cups(cups, max_val);
     }
     println!("Part 1: {:}", final_order(cups));
 
     let mut cups = [init_cups, (10..1000001).into_iter().collect_vec()].concat();
-    for _i in 0..1000 {
-        cups = move_cups(cups);
+    let max_val = cups.iter().max().unwrap().to_owned();
+
+    for _i in 0..10000 {
+        cups = move_cups(cups, max_val);
     }
 
     let index_1 = cups.iter().position(|&c| c == 1).unwrap();
