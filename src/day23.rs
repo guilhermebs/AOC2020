@@ -1,41 +1,38 @@
+
 use itertools::Itertools;
 
-fn move_cups(cups: Vec<u32>, max_val: u32) -> Vec<u32> {
-    let current_cup = cups[0];
-    let mut pickup = cups[1..4].to_vec();
-    let mut destination = current_cup - 1;
-    let insert_position = loop {
-        let index = cups[4..].iter().position(|&c| c == destination);
-        match index {
-            Some(i) => break i + 5,
-            None => (),
-        }
+fn move_cups(current_cup: usize, next_cups: &mut Vec<usize>) -> usize {
+    let pickup = [next_cups[current_cup], next_cups[next_cups[current_cup]], next_cups[next_cups[next_cups[current_cup]]]];
+    let mut destination = if current_cup > 0 {current_cup - 1} else {next_cups.len() - 1};
+    while pickup.contains(&destination) {
         if destination == 0 {
-            destination = max_val;
-        } else {
-            destination -= 1;
+            destination = next_cups.len() - 1;
         }
-    };
+        else {
+            destination -= 1; 
+        }
+    }
+    // Move the next cup
+    let next_in_sequence = next_cups[pickup[2]];
+    next_cups[current_cup] = next_in_sequence;
+    // Move the pickups
+    let after_destination = next_cups[destination];
+    next_cups[destination] = pickup[0];
+    next_cups[pickup[2]] = after_destination;
+    println!("current: {:?} target: {:?} pickup: {:?}", current_cup + 1, next_in_sequence + 1, pickup);
 
-    let mut result = cups[4..insert_position].to_vec();
-    result.append(&mut pickup);
-    result.extend_from_slice(&cups[insert_position..]);
-    result.push(current_cup);
-    return result;
+    return next_in_sequence;
+
 }
 
-fn final_order(cups: Vec<u32>) -> String {
-    let index_1 = cups.iter().position(|&c| c == 1).unwrap();
-    let mut result = cups[index_1 + 1..]
-        .iter()
-        .map(|x| x.to_string())
-        .collect::<String>();
-    result.push_str(
-        &cups[0..index_1]
-            .iter()
-            .map(|x| x.to_string())
-            .collect::<String>(),
-    );
+fn next_cups2sequence(start_cup: usize, next_cups: &Vec<usize>) -> Vec<usize> {
+    let mut result = vec![];
+    let mut cup = start_cup;
+    while next_cups[cup] != start_cup {
+        cup = next_cups[cup];
+       result.push(cup + 1) 
+    }
+
     return result;
 }
 
@@ -44,28 +41,37 @@ fn final_order(cups: Vec<u32>) -> String {
 #[allow(dead_code)]
 pub fn day23() {
     const RADIX: u32 = 10;
-    let input = "284573961"; // "389125467";
+    let input = "284573961";
 
     let init_cups = input
         .chars()
-        .map(|x| x.to_digit(RADIX).unwrap())
+        .map(|x| x.to_digit(RADIX).unwrap() as usize)
         .collect_vec();
 
-    let mut cups = init_cups.clone();
-    let max_val = cups.iter().max().unwrap().to_owned();
+    let mut next_cups = vec![0; init_cups.len()];
+    for (&c, &nc) in init_cups.iter().zip(init_cups[1..].iter()) {
+        next_cups[c - 1] = nc - 1;
+    }
+    next_cups[init_cups[init_cups.len()-1] - 1] = init_cups[0] - 1;
+
+    let mut current_cup = init_cups[0] - 1;
+    println!("current_cup: {:?}", current_cup + 1);
+    println!("cups: {:?}", next_cups2sequence(current_cup, &next_cups));
 
     for _ in 0..100 {
-        cups = move_cups(cups, max_val);
+        current_cup = move_cups(current_cup, &mut next_cups);
+        println!("current_cup: {:?}", current_cup + 1);
+        println!("cups: {:?}", next_cups2sequence(current_cup, &next_cups));
     }
-    println!("Part 1: {:}", final_order(cups));
+    println!("Part 1: {:}", next_cups2sequence(0, &next_cups).iter().map(|x| x.to_string()).join(""));
 
-    let mut cups = [init_cups, (10..1000001).into_iter().collect_vec()].concat();
-    let max_val = cups.iter().max().unwrap().to_owned();
+    //let mut cups = [init_cups, (10..1000001).into_iter().collect_vec()].concat();
+    //let max_val = cups.iter().max().unwrap().to_owned();
 
-    for _i in 0..10000 {
-        cups = move_cups(cups, max_val);
-    }
+    //for _i in 0..10000 {
+    //    cups = move_cups(cups, max_val);
+    //}
 
-    let index_1 = cups.iter().position(|&c| c == 1).unwrap();
-    println!("Part 2: {:}", cups[index_1 + 1] * cups[index_1 + 2]);
+    //let index_1 = cups.iter().position(|&c| c == 1).unwrap();
+    //println!("Part 2: {:}", cups[index_1 + 1] * cups[index_1 + 2]);
 }

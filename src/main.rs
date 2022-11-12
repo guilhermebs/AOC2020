@@ -46,8 +46,8 @@ fn main() {
     //day18::day18(); 
     //day19::day19();
     //day22::day22();
-    //day23::day23();
-    day24::day24();
+    day23::day23();
+    //day24::day24();
     let duration = start.elapsed();
     println!("Time elapsed: {:?}", duration)
 }
