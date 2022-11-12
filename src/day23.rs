@@ -19,7 +19,6 @@ fn move_cups(current_cup: usize, next_cups: &mut Vec<usize>) -> usize {
     let after_destination = next_cups[destination];
     next_cups[destination] = pickup[0];
     next_cups[pickup[2]] = after_destination;
-    println!("current: {:?} target: {:?} pickup: {:?}", current_cup + 1, next_in_sequence + 1, pickup);
 
     return next_in_sequence;
 
@@ -55,23 +54,22 @@ pub fn day23() {
     next_cups[init_cups[init_cups.len()-1] - 1] = init_cups[0] - 1;
 
     let mut current_cup = init_cups[0] - 1;
-    println!("current_cup: {:?}", current_cup + 1);
-    println!("cups: {:?}", next_cups2sequence(current_cup, &next_cups));
 
     for _ in 0..100 {
         current_cup = move_cups(current_cup, &mut next_cups);
-        println!("current_cup: {:?}", current_cup + 1);
-        println!("cups: {:?}", next_cups2sequence(current_cup, &next_cups));
     }
     println!("Part 1: {:}", next_cups2sequence(0, &next_cups).iter().map(|x| x.to_string()).join(""));
 
-    //let mut cups = [init_cups, (10..1000001).into_iter().collect_vec()].concat();
-    //let max_val = cups.iter().max().unwrap().to_owned();
+    let cups = [init_cups, (10..1000001).into_iter().collect_vec()].concat();
+    let mut next_cups = vec![0; cups.len()];
+    for (&c, &nc) in cups.iter().zip(cups[1..].iter()) {
+        next_cups[c - 1] = nc - 1;
+    }
+    next_cups[cups[cups.len()-1] - 1] = cups[0] - 1;
+    let mut current_cup = cups[0] - 1;
 
-    //for _i in 0..10000 {
-    //    cups = move_cups(cups, max_val);
-    //}
-
-    //let index_1 = cups.iter().position(|&c| c == 1).unwrap();
-    //println!("Part 2: {:}", cups[index_1 + 1] * cups[index_1 + 2]);
+    for _ in 0..10000000 {
+        current_cup = move_cups(current_cup, &mut next_cups);
+    }
+    println!("Part 2: {:}", (next_cups[0] + 1) * (next_cups[next_cups[0]] + 1));
 }
